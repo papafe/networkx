@@ -265,6 +265,10 @@ class TestGEXF(object):
         assert_equal(
             sorted(sorted(e) for e in G.edges()),
             sorted(sorted(e) for e in H.edges()))
+        # Reading a gexf graph always sets mode attribute to either 
+        # 'static' or 'dynamic'. Remove the mode attribute from the
+        # read graph for the sake of comparing remaining attributes.
+        del H.graph['mode']
         assert_equal(G.graph,H.graph)
 
     def test_serialize_ints_to_strings(self):
@@ -303,4 +307,11 @@ class TestGEXF(object):
         obtained = '\n'.join(nx.generate_gexf(G))
         assert_equal( expected, obtained )
 
-
+    def test_bool(self):
+        G=nx.Graph()
+        G.add_node(1, testattr=True)
+        fh = io.BytesIO()
+        nx.write_gexf(G,fh)
+        fh.seek(0)
+        H=nx.read_gexf(fh,node_type=int)
+        assert_equal(H.node[1]['testattr'], True)
